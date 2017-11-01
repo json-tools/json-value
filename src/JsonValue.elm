@@ -333,3 +333,52 @@ setProperty key value object =
                     [ ( key, value ) ]
                         |> ObjectValue
                         |> Ok
+
+
+{-|
+    Delete path in json object
+-}
+deleteIn : JsonValue -> List String -> Result String JsonValue
+deleteIn hostValue pathInJson =
+    let
+        ( key, path ) =
+            pathInJson
+                |> List.reverse
+                |> \x ->
+                    case x of
+                        k :: revPath ->
+                            ( Just k, List.reverse revPath )
+
+                        [] ->
+                            ( Nothing, [] )
+
+        rejectKey key val =
+            case val of
+                ObjectValue res ->
+                    res
+                        |> List.filter (\( k, _ ) -> k /= key)
+                        |> (ObjectValue >> Ok)
+
+                ArrayValue res ->
+                    res
+                        |> List.indexedMap (\ind v -> ( toString ind, v ))
+                        |> List.filter (\( k, _ ) -> k /= key)
+                        |> List.map (\( _, v ) -> v)
+                        |> (ArrayValue >> Ok)
+
+                _ ->
+                    Err "It is not possible to delete key when host value is not object or array"
+
+        targetValue =
+            case key of
+                Just k ->
+                    hostValue
+                        |> getIn path
+                        |> Result.andThen (rejectKey k)
+                        |> Result.withDefault hostValue
+
+                Nothing ->
+                    hostValue
+    in
+        hostValue
+            |> setIn path targetValue

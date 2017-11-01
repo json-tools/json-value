@@ -6,7 +6,7 @@ Helpers to work with JSON values in elm
 
 You might need this library if you want to:
 
-- update json value without writing decoder and encoder
+- update JSON value without writing decoder and encoder
 - render JSON object for debugging purposes
 
 ## Existing applications
