@@ -11,4 +11,4 @@ You might need this library if you want to:
 
 ## Existing applications
 
-This library is part of a bigger research of [json schema](https://github.com/1602/elm-json-schema), schema editor, and [json editor](https://github.com/1602/json-editor)
+This library is part of a bigger research of [json schema](https://github.com/1602/json-schema), schema editor, and [json editor](https://github.com/1602/json-editor)
