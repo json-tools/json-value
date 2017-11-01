@@ -46,6 +46,13 @@ suite =
                          ]
                             |> object
                         )
+        , describe "getIn"
+            [ test "simple object" <|
+                \() ->
+                    ObjectValue [ ( "foo", StringValue "bar" ) ]
+                        |> getIn [ "foo" ]
+                        |> Expect.equal (Ok <| StringValue "bar")
+            ]
         , describe "setIn"
             [ test "object" <|
                 \() ->
@@ -179,7 +186,7 @@ suite =
                     StringValue "bar"
                         |> inObjWithProp "foo"
                         |> setPropertyName ( [], 0 ) "bam"
-                        |> Expect.equal (Ok (ObjectValue ([ ( "bam", StringValue "bar" ) ])))
+                        |> Expect.equal (Ok <| ObjectValue <| [ ( "bam", StringValue "bar" ) ])
             ]
         ]
 

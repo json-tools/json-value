@@ -32,7 +32,7 @@ import Json.Decode as Decode exposing (Decoder, Value, succeed, decodeString)
 
 
 {-|
-    Type representing json value according to spec
+Type representing json value according to spec
 -}
 type JsonValue
     = ObjectValue (List ( String, JsonValue ))
@@ -44,7 +44,30 @@ type JsonValue
 
 
 {-|
-    Decoder for JsonValue
+Decoder for JsonValue
+
+    [ ( "str", Json.Encode.string "value" )
+    , ( "array", Json.Encode.list
+        [ Json.Encode.int 10
+        , Json.Encode.float 0.1
+        , Json.Encode.bool False
+        , Json.Encode.null
+        ] )
+    ]
+        |> object
+        |> Json.Decode.decodeValue decoder
+        |> Expect.equal
+            (Ok <|
+                ObjectValue
+                    [ ( "str", StringValue "value" )
+                    , ( "array", ArrayValue
+                        [ NumericValue 10
+                        , NumericValue 0.1
+                        , BoolValue False
+                        , NullValue
+                        ] )
+                    ]
+            )
 -}
 decoder : Decoder JsonValue
 decoder =
@@ -69,7 +92,29 @@ decoder =
 
 
 {-|
-    Encoder for JsonValue
+Encoder for JsonValue
+
+    [ ( "str", StringValue "value" )
+    , ( "array", ArrayValue
+        [ NumericValue 10
+        , NumericValue 0.1
+        , BoolValue False
+        , NullValue
+        ] )
+    ]
+        |> ObjectValue
+        |> encode
+        |> Expect.equal
+            ([ ( "str", Json.Encode.string "value" )
+             , ( "array", Json.Encode.list
+                [ Json.Encode.int 10
+                , Json.Encode.float 0.1
+                , Json.Encode.bool False
+                , Json.Encode.null
+                ] )
+             ]
+                |> object
+            )
 -}
 encode : JsonValue -> Value
 encode v =
@@ -98,7 +143,12 @@ encode v =
 
 
 {-|
-    Rename property in json value
+Rename property in json value
+
+    StringValue "bar"
+        |> inObjWithProp "foo"
+        |> setPropertyName ( [], 0 ) "bam"
+        |> Expect.equal (Ok <| ObjectValue <| [ ( "bam", StringValue "bar" ) ])
 -}
 setPropertyName : ( List String, Int ) -> String -> JsonValue -> Result String JsonValue
 setPropertyName ( pathInJson, index ) newName hostValue =
@@ -132,7 +182,12 @@ setPropertyName ( pathInJson, index ) newName hostValue =
 
 
 {-|
-    Set json value at given path
+Set json value at given path
+
+    ObjectValue [ ( "foo", NullValue ) ]
+        |> setIn [ "foo" ] (StringValue "bar")
+        |> Expect.equal
+            (Ok (ObjectValue [ ( "foo", StringValue "bar" ) ]))
 -}
 setIn : List String -> JsonValue -> JsonValue -> Result String JsonValue
 setIn pathInJson valueToSet hostValue =
@@ -177,7 +232,11 @@ setIn pathInJson valueToSet hostValue =
 
 
 {-|
-    Get json value at given path
+Get json value at given path
+
+    ObjectValue [ ( "foo", StringValue "bar" ) ]
+        |> getIn [ "foo" ]
+        |> Expect.equal (Ok <| StringValue "bar")
 -}
 getIn : List String -> JsonValue -> Result String JsonValue
 getIn path value =
