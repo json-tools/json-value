@@ -1,5 +1,7 @@
 # json-value
 
+[![Build Status](https://travis-ci.org/1602/json-value.svg?branch=master)](https://travis-ci.org/1602/json-value)
+
 Helpers to work with JSON values in elm
 
 ## Use cases
