@@ -1,12 +1,14 @@
 {
-    "version": "1.0.0",
+    "version": "1.1.0",
     "summary": "Reading and manipulation with json values",
     "repository": "https://github.com/1602/json-value.git",
     "license": "BSD3",
     "source-directories": [
         "./src"
     ],
-    "exposed-modules": [ "JsonValue" ],
+    "exposed-modules": [
+        "JsonValue"
+    ],
     "dependencies": {
         "elm-lang/core": "5.1.1 <= v < 6.0.0"
     },
