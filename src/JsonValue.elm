@@ -5,6 +5,7 @@ module JsonValue
         , encode
         , setIn
         , getIn
+        , deleteIn
         , setPropertyName
         )
 
@@ -19,7 +20,7 @@ module JsonValue
 
 # Manipulation
 
-@docs setIn, setPropertyName
+@docs setIn, setPropertyName, deleteIn
 
 # Transforms
 
@@ -338,8 +339,8 @@ setProperty key value object =
 {-|
     Delete path in json object
 -}
-deleteIn : JsonValue -> List String -> Result String JsonValue
-deleteIn hostValue pathInJson =
+deleteIn : List String -> JsonValue -> Result String JsonValue
+deleteIn pathInJson hostValue =
     let
         ( key, path ) =
             pathInJson
