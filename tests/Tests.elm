@@ -2,7 +2,7 @@ module Tests exposing (..)
 
 import Expect exposing (Expectation)
 import Test exposing (..)
-import JsonValue
+import Json.Value as JsonValue
     exposing
         ( JsonValue(ObjectValue, ArrayValue, BoolValue, StringValue, NumericValue, NullValue)
         , setIn
