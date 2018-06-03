@@ -1,4 +1,4 @@
-module JsonValue
+module Json.Value
     exposing
         ( JsonValue(ObjectValue, ArrayValue, BoolValue, StringValue, NumericValue, NullValue)
         , decoder
@@ -7,6 +7,8 @@ module JsonValue
         , getIn
         , deleteIn
         , setPropertyName
+        , decodeValue
+        , decodeString
         )
 
 {-|
@@ -26,10 +28,14 @@ module JsonValue
 
 @docs decoder, encode
 
+# Helpers
+
+@docs decodeString, decodeValue
+
 -}
 
 import Json.Encode as Encode
-import Json.Decode as Decode exposing (Decoder, Value, succeed, decodeString)
+import Json.Decode as Decode exposing (Decoder, Value, succeed)
 
 
 {-|
@@ -305,7 +311,7 @@ setProperty key value object =
                 let
                     index =
                         key
-                            |> decodeString Decode.int
+                            |> Decode.decodeString Decode.int
                             |> Result.withDefault (List.length list)
                 in
                     if List.length list > index then
@@ -383,3 +389,25 @@ deleteIn pathInJson hostValue =
     in
         hostValue
             |> setIn path targetValue
+
+
+{-|
+A helper function to decode value. JsonValue decoder always succeeds, this helper aims
+to reduce unnecessary noise in code.
+-}
+decodeValue : Value -> JsonValue
+decodeValue v =
+    v
+        |> Decode.decodeValue decoder
+        |> Result.withDefault NullValue
+
+
+{-|
+A helper function to decode string. JsonValue decoder always succeeds, this helper aims
+to reduce unnecessary noise in code.
+-}
+decodeString : String -> JsonValue
+decodeString v =
+    v
+        |> Decode.decodeString decoder
+        |> Result.withDefault NullValue
