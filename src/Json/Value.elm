@@ -8,7 +8,6 @@ module Json.Value
         , deleteIn
         , setPropertyName
         , decodeValue
-        , decodeString
         )
 
 {-|
@@ -30,7 +29,7 @@ module Json.Value
 
 # Helpers
 
-@docs decodeString, decodeValue
+@docs decodeValue
 
 -}
 
@@ -399,15 +398,4 @@ decodeValue : Value -> JsonValue
 decodeValue v =
     v
         |> Decode.decodeValue decoder
-        |> Result.withDefault NullValue
-
-
-{-|
-A helper function to decode string. JsonValue decoder always succeeds, this helper aims
-to reduce unnecessary noise in code.
--}
-decodeString : String -> JsonValue
-decodeString v =
-    v
-        |> Decode.decodeString decoder
         |> Result.withDefault NullValue
