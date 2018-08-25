@@ -1,31 +1,33 @@
-module Json.Value
-    exposing
-        ( JsonValue(ObjectValue, ArrayValue, BoolValue, StringValue, NumericValue, NullValue)
-        , decoder
-        , encode
-        , setIn
-        , getIn
-        , deleteIn
-        , setPropertyName
-        , decodeValue
-        )
+module Json.Value exposing
+    ( JsonValue(..)
+    , getIn
+    , setIn, setPropertyName, deleteIn
+    , decoder, encode
+    , decodeValue
+    )
 
 {-|
+
+
 # Definitions
 
 @docs JsonValue
+
 
 # Reading
 
 @docs getIn
 
+
 # Manipulation
 
 @docs setIn, setPropertyName, deleteIn
 
+
 # Transforms
 
 @docs decoder, encode
+
 
 # Helpers
 
@@ -33,12 +35,11 @@ module Json.Value
 
 -}
 
-import Json.Encode as Encode
 import Json.Decode as Decode exposing (Decoder, Value, succeed)
+import Json.Encode as Encode
 
 
-{-|
-Type representing json value according to spec
+{-| Type representing json value according to spec
 -}
 type JsonValue
     = ObjectValue (List ( String, JsonValue ))
@@ -49,16 +50,17 @@ type JsonValue
     | StringValue String
 
 
-{-|
-Decoder for JsonValue
+{-| Decoder for JsonValue
 
     [ ( "str", Json.Encode.string "value" )
-    , ( "array", Json.Encode.list
-        [ Json.Encode.int 10
-        , Json.Encode.float 0.1
-        , Json.Encode.bool False
-        , Json.Encode.null
-        ] )
+    , ( "array"
+      , Json.Encode.list
+            [ Json.Encode.int 10
+            , Json.Encode.float 0.1
+            , Json.Encode.bool False
+            , Json.Encode.null
+            ]
+      )
     ]
         |> object
         |> Json.Decode.decodeValue decoder
@@ -66,14 +68,17 @@ Decoder for JsonValue
             (Ok <|
                 ObjectValue
                     [ ( "str", StringValue "value" )
-                    , ( "array", ArrayValue
-                        [ NumericValue 10
-                        , NumericValue 0.1
-                        , BoolValue False
-                        , NullValue
-                        ] )
+                    , ( "array"
+                      , ArrayValue
+                            [ NumericValue 10
+                            , NumericValue 0.1
+                            , BoolValue False
+                            , NullValue
+                            ]
+                      )
                     ]
             )
+
 -}
 decoder : Decoder JsonValue
 decoder =
@@ -87,40 +92,44 @@ decoder =
             Decode.list (Decode.lazy (\_ -> decoder))
                 |> Decode.map ArrayValue
     in
-        Decode.oneOf
-            [ objectValueDecoder
-            , arrayValueDecoder
-            , Decode.null NullValue
-            , Decode.string |> Decode.map StringValue
-            , Decode.float |> Decode.map NumericValue
-            , Decode.bool |> Decode.map BoolValue
-            ]
+    Decode.oneOf
+        [ objectValueDecoder
+        , arrayValueDecoder
+        , Decode.null NullValue
+        , Decode.string |> Decode.map StringValue
+        , Decode.float |> Decode.map NumericValue
+        , Decode.bool |> Decode.map BoolValue
+        ]
 
 
-{-|
-Encoder for JsonValue
+{-| Encoder for JsonValue
 
     [ ( "str", StringValue "value" )
-    , ( "array", ArrayValue
-        [ NumericValue 10
-        , NumericValue 0.1
-        , BoolValue False
-        , NullValue
-        ] )
+    , ( "array"
+      , ArrayValue
+            [ NumericValue 10
+            , NumericValue 0.1
+            , BoolValue False
+            , NullValue
+            ]
+      )
     ]
         |> ObjectValue
         |> encode
         |> Expect.equal
             ([ ( "str", Json.Encode.string "value" )
-             , ( "array", Json.Encode.list
-                [ Json.Encode.int 10
-                , Json.Encode.float 0.1
-                , Json.Encode.bool False
-                , Json.Encode.null
-                ] )
+             , ( "array"
+               , Json.Encode.list
+                    [ Json.Encode.int 10
+                    , Json.Encode.float 0.1
+                    , Json.Encode.bool False
+                    , Json.Encode.null
+                    ]
+               )
              ]
                 |> object
             )
+
 -}
 encode : JsonValue -> Value
 encode v =
@@ -132,8 +141,7 @@ encode v =
 
         ArrayValue av ->
             av
-                |> List.map encode
-                |> Encode.list
+                |> Encode.list encode
 
         StringValue s ->
             Encode.string s
@@ -148,13 +156,13 @@ encode v =
             Encode.float n
 
 
-{-|
-Rename property in json value
+{-| Rename property in json value
 
     StringValue "bar"
         |> inObjWithProp "foo"
         |> setPropertyName ( [], 0 ) "bam"
         |> Expect.equal (Ok <| ObjectValue <| [ ( "bam", StringValue "bar" ) ])
+
 -}
 setPropertyName : ( List String, Int ) -> String -> JsonValue -> Result String JsonValue
 setPropertyName ( pathInJson, index ) newName hostValue =
@@ -164,12 +172,13 @@ setPropertyName ( pathInJson, index ) newName hostValue =
                 ObjectValue v ->
                     v
                         |> List.indexedMap
-                            (\i ( k, v ) ->
+                            (\i ( k, value ) ->
                                 ( if index == i then
                                     newName
+
                                   else
                                     k
-                                , v
+                                , value
                                 )
                             )
                         |> ObjectValue
@@ -184,16 +193,16 @@ setPropertyName ( pathInJson, index ) newName hostValue =
                 |> Result.andThen renameKey
                 |> Result.withDefault hostValue
     in
-        setIn pathInJson targetValue hostValue
+    setIn pathInJson targetValue hostValue
 
 
-{-|
-Set json value at given path
+{-| Set json value at given path
 
     ObjectValue [ ( "foo", NullValue ) ]
         |> setIn [ "foo" ] (StringValue "bar")
         |> Expect.equal
             (Ok (ObjectValue [ ( "foo", StringValue "bar" ) ]))
+
 -}
 setIn : List String -> JsonValue -> JsonValue -> Result String JsonValue
 setIn pathInJson valueToSet hostValue =
@@ -210,10 +219,10 @@ setIn pathInJson valueToSet hostValue =
                 _ :: subpath ->
                     path
                         |> List.foldl
-                            (\key ( path, value ) ->
+                            (\key ( thisPath, value ) ->
                                 let
                                     p =
-                                        List.reverse path
+                                        List.reverse thisPath
 
                                     v =
                                         value
@@ -224,25 +233,25 @@ setIn pathInJson valueToSet hostValue =
                                                         |> Result.andThen (setProperty key vv)
                                                 )
                                 in
-                                    case path of
-                                        [] ->
-                                            ( [], v )
+                                case thisPath of
+                                    [] ->
+                                        ( [], v )
 
-                                        _ :: tail ->
-                                            ( tail, v )
+                                    _ :: tail ->
+                                        ( tail, v )
                             )
                             ( subpath, Ok valueToSet )
-                        |> \( _, v ) -> v
+                        |> (\( _, v ) -> v)
     in
-        newValue
+    newValue
 
 
-{-|
-Get json value at given path
+{-| Get json value at given path
 
     ObjectValue [ ( "foo", StringValue "bar" ) ]
         |> getIn [ "foo" ]
         |> Expect.equal (Ok <| StringValue "bar")
+
 -}
 getIn : List String -> JsonValue -> Result String JsonValue
 getIn path value =
@@ -255,11 +264,13 @@ getIn path value =
                 ObjectValue v ->
                     v
                         |> List.foldl
-                            (\( key, v ) res ->
+                            (\( key, val ) res ->
                                 if res /= Nothing then
                                     res
+
                                 else if key == head then
-                                    Just v
+                                    Just val
+
                                 else
                                     Nothing
                             )
@@ -270,6 +281,7 @@ getIn path value =
                 ArrayValue v ->
                     head
                         |> String.toInt
+                        |> Result.fromMaybe "Not an integer"
                         |> Result.andThen
                             (\index ->
                                 v
@@ -293,56 +305,63 @@ setProperty key value object =
                         (\( k, v ) ->
                             if k == key then
                                 ( key, value )
+
                             else
                                 ( k, v )
                         )
+
             else
                 list ++ [ ( key, value ) ]
     in
-        case object of
-            ObjectValue o ->
-                o
-                    |> updateOrAppend
+    case object of
+        ObjectValue o ->
+            o
+                |> updateOrAppend
+                |> ObjectValue
+                |> Ok
+
+        ArrayValue list ->
+            let
+                index =
+                    key
+                        |> Decode.decodeString Decode.int
+                        |> Result.withDefault (List.length list)
+            in
+            if List.length list > index then
+                list
+                    |> List.indexedMap
+                        (\i v ->
+                            if i == index then
+                                value
+
+                            else
+                                v
+                        )
+                    |> ArrayValue
+                    |> Ok
+
+            else
+                list
+                    ++ [ value ]
+                    |> ArrayValue
+                    |> Ok
+
+        _ ->
+            if key == "0" then
+                [ value ]
+                    |> ArrayValue
+                    |> Ok
+
+            else
+                [ ( key, value ) ]
                     |> ObjectValue
                     |> Ok
 
-            ArrayValue list ->
-                let
-                    index =
-                        key
-                            |> Decode.decodeString Decode.int
-                            |> Result.withDefault (List.length list)
-                in
-                    if List.length list > index then
-                        list
-                            |> List.indexedMap
-                                (\i v ->
-                                    if i == index then
-                                        value
-                                    else
-                                        v
-                                )
-                            |> ArrayValue
-                            |> Ok
-                    else
-                        list
-                            ++ [ value ]
-                            |> ArrayValue
-                            |> Ok
-
-            _ ->
-                if key == "0" then
-                    [ value ]
-                        |> ArrayValue
-                        |> Ok
-                else
-                    [ ( key, value ) ]
-                        |> ObjectValue
-                        |> Ok
-
 
 {-|
+
     Delete path in json object
+
 -}
 deleteIn : List String -> JsonValue -> Result String JsonValue
 deleteIn pathInJson hostValue =
@@ -350,25 +369,26 @@ deleteIn pathInJson hostValue =
         ( key, path ) =
             pathInJson
                 |> List.reverse
-                |> \x ->
-                    case x of
-                        k :: revPath ->
-                            ( Just k, List.reverse revPath )
+                |> (\x ->
+                        case x of
+                            k :: revPath ->
+                                ( Just k, List.reverse revPath )
 
-                        [] ->
-                            ( Nothing, [] )
+                            [] ->
+                                ( Nothing, [] )
+                   )
 
-        rejectKey key val =
+        rejectKey keyToReject val =
             case val of
                 ObjectValue res ->
                     res
-                        |> List.filter (\( k, _ ) -> k /= key)
+                        |> List.filter (\( k, _ ) -> k /= keyToReject)
                         |> (ObjectValue >> Ok)
 
                 ArrayValue res ->
                     res
-                        |> List.indexedMap (\ind v -> ( toString ind, v ))
-                        |> List.filter (\( k, _ ) -> k /= key)
+                        |> List.indexedMap (\ind v -> ( ind |> String.fromInt, v ))
+                        |> List.filter (\( k, _ ) -> k /= keyToReject)
                         |> List.map (\( _, v ) -> v)
                         |> (ArrayValue >> Ok)
 
@@ -386,12 +406,11 @@ deleteIn pathInJson hostValue =
                 Nothing ->
                     hostValue
     in
-        hostValue
-            |> setIn path targetValue
+    hostValue
+        |> setIn path targetValue
 
 
-{-|
-A helper function to decode value. JsonValue decoder always succeeds, this helper aims
+{-| A helper function to decode value. JsonValue decoder always succeeds, this helper aims
 to reduce unnecessary noise in code.
 -}
 decodeValue : Value -> JsonValue
