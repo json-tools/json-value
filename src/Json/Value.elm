@@ -226,11 +226,12 @@ setIn pathInJson valueToSet hostValue =
 
                                     v =
                                         value
-                                            |> Result.andThen
+                                            |> Result.map
                                                 (\vv ->
                                                     hostValue
                                                         |> getIn p
                                                         |> Result.andThen (setProperty key vv)
+                                                        |> Result.withDefault (ObjectValue [ ( key, vv ) ])
                                                 )
                                 in
                                 case thisPath of
