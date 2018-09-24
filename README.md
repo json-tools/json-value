@@ -1,6 +1,6 @@
 # json-value
 
-[![Build Status](https://travis-ci.org/1602/json-value.svg?branch=master)](https://travis-ci.org/1602/json-value)
+[![Build Status](https://travis-ci.org/json-tools/json-value.svg?branch=master)](https://travis-ci.org/json-tools/json-value)
 
 Helpers to work with JSON values in elm
 
@@ -13,4 +13,10 @@ You might need this library if you want to:
 
 ## Existing applications
 
-This library is part of a bigger research of [json schema](https://github.com/1602/json-schema), schema editor, and [json editor](https://github.com/1602/json-editor)
+This library is part of a bigger research of [json schema](https://github.com/json-tools/json-schema), schema editor, and [json editor](https://github.com/1602/json-editor)
+
+## Installation
+
+```
+elm install json-tools/json-value
+```
