@@ -1,16 +1,17 @@
-module Tests exposing (..)
+module Tests exposing (inArray, inObjWithProp, suite)
 
 import Expect exposing (Expectation)
-import Test exposing (..)
+import Json.Decode as Decode
+import Json.Encode as Encode exposing (bool, float, int, list, null, object, string)
 import Json.Value as JsonValue
     exposing
-        ( JsonValue(ObjectValue, ArrayValue, BoolValue, StringValue, NumericValue, NullValue)
-        , setIn
+        ( JsonValue(..)
         , getIn
+        , setIn
         , setPropertyName
         )
-import Json.Encode as Encode exposing (object, list, string, int, float, bool, null)
-import Json.Decode as Decode
+import Test exposing (..)
+
 
 
 --import Fuzz exposing (Fuzzer, list, int, string)
@@ -22,7 +23,7 @@ suite =
         [ test "decoder" <|
             \() ->
                 [ ( "str", string "value" )
-                , ( "array", list [ int 10, float 0.1, bool False, null ] )
+                , ( "array", list identity [ int 10, float 0.1, bool False, null ] )
                 ]
                     |> object
                     |> Decode.decodeValue JsonValue.decoder
@@ -42,7 +43,7 @@ suite =
                     |> JsonValue.encode
                     |> Expect.equal
                         ([ ( "str", string "value" )
-                         , ( "array", list [ int 10, float 0.1, bool False, null ] )
+                         , ( "array", list identity [ int 10, float 0.1, bool False, null ] )
                          ]
                             |> object
                         )
@@ -178,7 +179,7 @@ suite =
                         |> inObjWithProp "foo"
                         |> setIn [ "bar" ] (StringValue "bar")
                         |> Expect.equal
-                            (Ok (ObjectValue ([ ( "foo", NullValue ), ( "bar", StringValue "bar" ) ])))
+                            (Ok (ObjectValue [ ( "foo", NullValue ), ( "bar", StringValue "bar" ) ]))
             ]
         , describe "setPropertyName"
             [ test "simple object" <|

@@ -85,7 +85,7 @@ decoder =
     let
         objectValueDecoder =
             Decode.keyValuePairs (Decode.lazy (\_ -> decoder))
-                |> Decode.andThen (List.reverse >> succeed)
+                --|> Decode.andThen (List.reverse >> succeed)
                 |> Decode.map ObjectValue
 
         arrayValueDecoder =
